@@ -1,0 +1,38 @@
+DIGEST 64935ecbe570975830d3d01c88985d7c
+FAL.Laws
+sec 8:11 <> aaaa
+var 24:24 aaaa T
+var 43:44 aaaa op
+R49:52 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R48:48 AL.Laws <> aaaa.T var
+R54:57 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R53:53 AL.Laws <> aaaa.T var
+R58:58 AL.Laws <> aaaa.T var
+def 73:76 <> comm
+R94:94 AL.Laws <> aaaa.T var
+binder 88:88 <> a:3
+binder 90:90 <> b:4
+R103:105 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R97:98 AL.Laws <> aaaa.op var
+R100:100 AL.Laws <> a:3 var
+R102:102 AL.Laws <> b:4 var
+R106:107 AL.Laws <> aaaa.op var
+R109:109 AL.Laws <> b:4 var
+R111:111 AL.Laws <> a:3 var
+def 125:129 <> assoc
+R149:149 AL.Laws <> aaaa.T var
+binder 141:141 <> a:5
+binder 143:143 <> b:6
+binder 145:145 <> c:7
+R165:167 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R152:153 AL.Laws <> aaaa.op var
+R155:155 AL.Laws <> a:5 var
+R158:159 AL.Laws <> aaaa.op var
+R161:161 AL.Laws <> b:6 var
+R163:163 AL.Laws <> c:7 var
+R168:169 AL.Laws <> aaaa.op var
+R172:173 AL.Laws <> aaaa.op var
+R175:175 AL.Laws <> a:5 var
+R177:177 AL.Laws <> b:6 var
+R180:180 AL.Laws <> c:7 var
+R188:191 AL.Laws aaaa <> sec
