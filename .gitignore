@@ -1,0 +1,3 @@
+*.coq
+*.coq.conf
+*.coq.d
