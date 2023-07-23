@@ -1,0 +1,6 @@
+✓ Separate modules/files
+✓ Eliminate Nat. Nat.Div0. mentions via proper import
+- Group isomorphism
+- Quotient Groups
+- Cardinality
+- Lagrange's Theorem

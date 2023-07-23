@@ -3,10 +3,14 @@ Require Import List.
 Require Import Lia.
 Import ListNotations.
 
+(* Local Imports *)
+Require Import Laws.
+
 (* General Properties *)
-Definition comm {T : Type} (op: T -> T -> T) := forall a b : T, op a b = op b a.
+(* Definition comm {T : Type} (op: T -> T -> T) := forall a b : T, op a b = op b a.
 Definition assoc {T : Type} (op: T -> T -> T) := forall a b c : T, op a (op b c) = op (op a b) c.
 Definition subset {T : Type} (G H : T -> Prop) := forall x, H x -> G x.
+*)
 
 (* Group Definitions *)
 Section group.
@@ -26,7 +30,7 @@ Class Group (G : T -> Prop) (op : T -> T -> T) := group  {
   Ge: T;
   Ginv: T -> T;
   Gclosed: forall a b, G a -> G b -> G (op a b);
-  Gassoc: assoc op;
+  Gassoc: forall a b c, G a -> G b -> G c -> op a (op b c) = op (op a b) c;
   Ge_c: G Ge;
   Ge_l: forall a, G a -> op a Ge = a;
   Ge_r: forall a, G a -> op Ge a = a;
@@ -52,7 +56,7 @@ Definition membership_dec := forall a, elem_dec a.
 
 Lemma uniqueness_of_identity i:
   G i
-  -> (forall a, G a -> op a i = a ) \/ (forall a, G a -> op i a = a)
+  -> (forall a, G a -> op a i = a) \/ (forall a, G a -> op i a = a)
   -> i = Ge.
 Proof.
   intros Hi [Hi_l | Hi_r].
@@ -68,7 +72,8 @@ Proof.
   intros a b x Ga Gb Gx Heq.
   erewrite <- (Ge_r a Ga), <- (Ge_r b Gb) by auto.
   rewrite <- (Ginv_r x Gx) by auto.
-  rewrite <- !Gassoc.
+  pose proof (Ginv_c x Gx).
+  rewrite <- !Gassoc; auto.
   rewrite Heq. auto.
 Qed.
 
@@ -78,7 +83,8 @@ Proof.
   intros a b x Ga Gb Gx Heq.
   erewrite <- (Ge_l a Ga), <- (Ge_l b Gb) by auto.
   rewrite <- (Ginv_l x Gx) by auto.
-  rewrite !Gassoc.
+  pose proof (Ginv_c x Gx).
+  rewrite !Gassoc; auto.
   rewrite Heq. auto.
 Qed.
 
@@ -97,9 +103,10 @@ Proof.
     + rewrite Ginv_r; assumption.
 Qed.
 
-Lemma inv_involutive :
+Lemma inv_involutive : 
   forall x, G x -> Ginv (Ginv x) = x.
 Proof.
+  autounfold.
   intros x Gx.
   pose proof (Ginv_c x Gx) as Gx'.
   remember (Ginv x) as x'.
@@ -133,7 +140,7 @@ Definition subgroup (A : T -> Prop) `(Group A op) :=
 *)
 
 (* Subgroup via least requirements *)
-Class SubGroup (A : T -> Prop) := subgroup {
+Class SubGroup (A : T -> Prop) := sgroup {
   Ssub : forall x, A x -> G x;
   Snon_emp : exists x, A x;
   Sclosed : forall x y, A x -> A y -> A (op x y); 
@@ -168,8 +175,8 @@ Qed.
 (* Finite Groups *)
 Section finite.
 
-Class FiniteGroup := finite_group {
-  GGroup :> @Group G op;
+Class FiniteGroup := fgroup {
+  GGroup ::> Group G op;
   Gelems : list T;
   Gorder := length Gelems;
   Gequiv : forall a, List.In a Gelems <-> G a
@@ -199,6 +206,9 @@ End basic.
 
 Section modular.
 
+Import Nat.
+Import Nat.Div0.
+
 Variable N : nat.
 
 Definition bounded n := 0 <= n < N.
@@ -213,27 +223,27 @@ Hypothesis HN : N <> 0.
   }.
 Proof.
   all: unfold add, bounded.
-  - intros. apply Nat.mod_bound_pos; lia.
+  - intros. apply mod_bound_pos; lia.
   - unfold assoc. intros.
-    rewrite Nat.add_comm, !Nat.add_mod_idemp_l by auto.
-    rewrite Nat.add_comm, Nat.add_assoc. auto.
+    rewrite add_comm, !add_mod_idemp_l by auto.
+    rewrite add_comm, add_assoc. auto.
   - lia.
   - intros a H; rewrite Nat.add_0_r.
-    apply Nat.mod_small. lia.
+    apply mod_small. lia.
   - intros a H; simpl (0 + a).
-    apply Nat.mod_small. lia.
+    apply mod_small. lia.
   - intros.
-    apply Nat.mod_bound_pos; lia.
+    apply mod_bound_pos; lia.
   - intros.
-    rewrite Nat.add_mod_idemp_r by auto.
-    rewrite Nat.add_sub_assoc.
+    rewrite Div0.add_mod_idemp_r by auto.
+    rewrite add_sub_assoc.
     + replace (a + N - a) with N by lia.
-      apply Nat.mod_same; auto.
+      apply Div0.mod_same; auto.
     + lia.
   - intros.
-    rewrite Nat.add_mod_idemp_l by auto.
+    rewrite add_mod_idemp_l by auto.
     replace (N - a + a) with N by lia.
-    apply Nat.mod_same; auto.
+    apply mod_same; auto.
 Qed.
 
 Fixpoint Zmod (n : nat) : list nat := 
@@ -268,7 +278,7 @@ Check ZmodN_G.
 Definition ZmodN: 
   FiniteGroup nat bounded add.
 Proof.
-  apply finite_group with (Zmod N).
+  apply fgroup with (Zmod N).
   - apply ZmodN_G.
   - apply mod_list_pred_equiv.
 Qed.
@@ -277,7 +287,8 @@ End modular.
 
 (* Goals *)
 (*
-  ! Separate modules/files
+  ✓ Separate modules/files
+  ✓ Eliminate Nat. Nat.Div0. mentions via proper import
   - Group isomorphism
   - Quotient Groups
   - Cardinality

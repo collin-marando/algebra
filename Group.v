@@ -1,110 +1,134 @@
-From Coq Require Import Ensembles.
-From Coq Require Import Arith_base.
-From Coq Require Import ZArith.
-From Coq Require Import Lia.
+Require Import Arith.
+Require Import List.
+Require Import Lia.
+Import ListNotations.
 
-Section Demo.
+Section Group.
 
-Inductive Nats : Ensemble nat :=
-  Nats_defn x : Nats x.
-
-Inductive Evens : Ensemble nat :=
-  | Evens_Z : Evens 0
-  | Evens_S n : Evens (S (S n)).
- 
-Theorem Evens_sub_Nats : Included nat Evens Nats.
-Proof.
-  unfold Included, In.
-  intros. constructor.
-Qed.
-
-Class CommSet (G : Set) (op: G -> G -> G) := {
-  CScomm: forall a b : G, op a b = op b a
-}.
-
-Class Group' (G : Set) (op: G -> G -> G) := {
-  G'e: G;
-  G'comm :> CommSet G op;
-  G'ident: forall a : G, op G'e a = a
-}.
-
-#[refine] Instance groupNat : Group' nat plus := {G'e := 0}.
-Proof.
-  all: try constructor; intros; lia.
-Qed.
-
-End Demo.
-
-Section Basic_laws.
-Variable U : Type.
-Variable op : U -> U -> U.
-
-Definition commutative := forall x y : U, op x y = op y x.
-
-Definition associative := forall x y z : U, op x (op y z) = op (op x y) z.
-
-Definition left_neutral (e : U) := forall x : U, op e x = x.
-
-Definition right_neutral (e : U) := forall x : U, op x e = x.
-
-Definition left_inverse (inv : U -> U) (e : U) :=
-  forall x : U, op (inv x) x = e.
-
-Definition right_inverse (inv : U -> U) (e : U) :=
-  forall x : U, op x (inv x) = e.
-Variable D : Ensemble U.
-
-Definition endo_function (f : U -> U) :=
-  forall x : U, In U D x -> In U D (f x).
-
-Definition endo_operation (op : U -> U -> U) :=
-  forall x y : U, In U D x -> In U D y -> In U D (op x y).
-End Basic_laws.
-#[export] Hint Unfold endo_function endo_operation commutative associative left_neutral
-  right_neutral left_inverse right_inverse : core.
-
-Section Groups.
 Variable T : Type.
 
-Class Group (G : Set) (op: G -> G -> G) := {
+(* 
+  In order to maximize the strength of theorems,
+  we can weaken the preconditon by only assuming the group
+  requirements that we need for the proof. We can implment
+  sets of group properties as subclasses of the Group class. 
+  The informal description of a Group divides these properties
+  into 4 laws: closure, associativity, identity, and inverses.
+*)
+
+Class Group (G : T -> Prop) (op : T -> T -> T) := group  {
   Ge: T;
   Ginv: T -> T;
-  Gclosed: forall a b : T, G a -> G b -> G (op a b);
-  Gassoc: associative T op;
+  Gclosed: forall a b, G a -> G b -> G (op a b);
+  Gassoc: forall a b c, G a -> G b -> G c -> op a (op b c) = op (op a b) c;
   Ge_c: G Ge;
-  Ge_l: forall a : T, G a -> op a Ge = a;
-  Ge_r: forall a : T, G a -> op Ge a = a;
-  Ginv_c: endo_function T G Ginv;
-  Ginv_l: True;
-  Ginv_r: True
+  Ge_l: forall a, G a -> op a Ge = a;
+  Ge_r: forall a, G a -> op Ge a = a;
+  Ginv_c: forall a, G a -> G (Ginv a);
+  Ginv_l: forall a, G a -> op a (Ginv a) = Ge;
+  Ginv_r: forall a, G a -> op (Ginv a) a = Ge
 }.
 
-Theorem Group_nonempty {G} {op} `{Group G op} :
-  exists a : T, G a.
+(* ---------- Group Theorems -----------*)
+
+Variable G : T -> Prop.
+Variable op : T -> T -> T.
+Hypothesis HG : Group G op.
+
+(* Note: There may be a class worth making where membership
+  decidabilty is required as a field, if there are sufficient
+  theorems that rely on it *)
+Definition elem_dec (a : T) := {G a} + {~ G a}.
+Definition membership_dec := forall a, elem_dec a.
+
+(* Note for FiniteGroup, ^this can be reflected with in inclusion
+  in the list *)
+
+Lemma uniqueness_of_identity i:
+  G i
+  -> (forall a, G a -> op a i = a) \/ (forall a, G a -> op i a = a)
+  -> i = Ge.
 Proof.
-  exists Ge. apply Ge_c.
+  intros Hi [Hi_l | Hi_r].
+  - rewrite <- (Ge_r i), Hi_l; auto.
+    apply Ge_c.
+  - rewrite <- (Ge_l i), Hi_r; auto.
+    apply Ge_c.
 Qed.
 
-End Groups.
-
-Instance gnat : Group nat .
-
-
-Definition nonempty {T : Type} (G : Group) :=
-  exists a : T, In G a.
-
-Definition ident {T : Type} (G : Group T) :=
-  exists e : T, forall a : T, Op G e a = e /\ Op G a e = e.
-
-Definition closed {T : Type} (G : Ensemble T) (op : T -> T -> T) :=
-  forall a b : T, G a -> G b -> G (op a b).
-
-Definition Group {T : Type} (G : Ensemble T) (op : T -> T -> T) := 
-  nonempty G /\ ident G op /\ closed G op.
-  
-
-  
-Theorem G_Nats : Group Nats plus.
+Lemma left_cancellation :
+forall a b x, G a -> G b -> G x -> op x a = op x b -> a = b.
 Proof.
-  unfold Group, nonempty.
-  exists 0. constructor.
+  intros a b x Ga Gb Gx Heq.
+  erewrite <- (Ge_r a Ga), <- (Ge_r b Gb) by auto.
+  rewrite <- (Ginv_r x Gx) by auto.
+  pose proof (Ginv_c x Gx).
+  rewrite <- !Gassoc; auto.
+  rewrite Heq. auto.
+Qed.
+
+Lemma right_cancellation :
+forall a b x, G a -> G b -> G x -> op a x = op b x -> a = b.
+Proof.
+  intros a b x Ga Gb Gx Heq.
+  erewrite <- (Ge_l a Ga), <- (Ge_l b Gb) by auto.
+  rewrite <- (Ginv_l x Gx) by auto.
+  pose proof (Ginv_c x Gx).
+  rewrite !Gassoc; auto.
+  rewrite Heq. auto.
+Qed.
+
+Lemma uniqueness_of_inverses f:
+  forall a, G a 
+  -> G (f a)
+  -> op a (f a) = Ge \/ op (f a) a = Ge
+  -> f a = HG.(Ginv) a.
+Proof.
+  intros a Ga Gfa [Gf_l | Gf_r].
+  - apply left_cancellation with a; try assumption.
+    + apply Ginv_c, Ga.
+    + rewrite Ginv_l; assumption.
+  - apply right_cancellation with a; try assumption.
+    + apply Ginv_c, Ga.
+    + rewrite Ginv_r; assumption.
+Qed.
+
+Lemma inv_involutive : 
+  forall x, G x -> Ginv (Ginv x) = x.
+Proof.
+  autounfold.
+  intros x Gx.
+  pose proof (Ginv_c x Gx) as Gx'.
+  remember (Ginv x) as x'.
+  symmetry.
+  remember (fun _ : T => x) as f.
+  replace x with (f x'); [|rewrite Heqf; auto].
+  apply uniqueness_of_inverses; auto;
+  rewrite Heqx', Heqf; auto.
+  left. apply Ginv_r, Gx.
+Qed.
+
+Lemma inv_injective :
+  forall a b, G a -> G b -> Ginv a = Ginv b -> a = b.
+Proof.
+  intros a b Ga Gb Heq.
+  apply left_cancellation with (Ginv a); auto.
+  - apply Ginv_c, Ga.
+  - rewrite Heq at 2.
+    rewrite !Ginv_r; auto.
+Qed.
+
+
+(* Finite Groups *)
+Section finite.
+
+Class FiniteGroup := fgroup {
+  GGroup ::> Group G op;
+  Gelems : list T;
+  Gorder := length Gelems;
+  Gequiv : forall a, List.In a Gelems <-> G a
+}.
+
+End finite.
+
+End Group.
