@@ -5,7 +5,8 @@ Import ListNotations.
 
 Section Group.
 
-Variable T : Type.
+(* Implicit Type  *)
+Context {T : Type}.
 
 (* 
   In order to maximize the strength of theorems,
@@ -96,7 +97,6 @@ Qed.
 Lemma inv_involutive : 
   forall x, G x -> Ginv (Ginv x) = x.
 Proof.
-  autounfold.
   intros x Gx.
   pose proof (Ginv_c x Gx) as Gx'.
   remember (Ginv x) as x'.

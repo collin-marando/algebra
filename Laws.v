@@ -20,4 +20,4 @@ Definition subset (G H : T -> Prop) := forall x, H x -> G x.
 
 End Laws.
 
-#[export] Hint Unfold comm assoc involutive : core.
+#[export] Hint Unfold all : core.

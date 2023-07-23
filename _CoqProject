@@ -1,4 +1,6 @@
 -R . AL
 
-Ideas.v
 Laws.v
+Group.v
+Subgroup.v
+Instances.v

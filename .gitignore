@@ -1,3 +1,7 @@
 *.coq
 *.coq.conf
 *.coq.d
+*.vo
+*.vok
+*.vos
+*.glob
