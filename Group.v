@@ -30,7 +30,17 @@ Class Group (G : T -> Prop) (op : T -> T -> T) := group  {
   Ginv_r: forall a, G a -> op (Ginv a) a = Ge
 }.
 
+Class FiniteGroup G op := fgroup {
+  GGroup ::> Group G op;
+  Gelems : list T;
+  Gorder := length Gelems;
+  Gnodup : NoDup Gelems;
+  Gequiv : forall a, In a Gelems <-> G a
+}.
+
 (* ---------- Group Theorems -----------*)
+
+Section group_theorems.
 
 Variable G : T -> Prop.
 Variable op : T -> T -> T.
@@ -118,17 +128,25 @@ Proof.
     rewrite !Ginv_r; auto.
 Qed.
 
+End group_theorems.
 
-(* Finite Groups *)
-Section finite.
+(* Finite Group Theorems *)
+Section finite_group_theorems.
 
-Class FiniteGroup := fgroup {
-  GGroup ::> Group G op;
-  Gelems : list T;
-  Gorder := length Gelems;
-  Gequiv : forall a, List.In a Gelems <-> G a
-}.
+Variable G : T -> Prop.
+Variable op : T -> T -> T.
+Variable HFG : FiniteGroup G op.
 
-End finite.
+Lemma FG_nonempty : Gorder > 0.
+Proof.
+  unfold Gorder.
+  assert (HIn : In Ge Gelems).
+  - rewrite Gequiv. apply Ge_c.
+  - destruct Gelems; simpl.
+    + inversion HIn.
+    + lia.
+Qed.
+
+End finite_group_theorems.
 
 End Group.

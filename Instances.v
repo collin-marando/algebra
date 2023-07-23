@@ -1,12 +1,12 @@
 Require Import Arith.
 Require Import List.
 Require Import Lia.
+Require Import Permutation.
 Import ListNotations.
 
 (* Local Imports *)
 Require Import Laws.
 Require Import Group.
-Require Import Subgroup.
 
 Section basic.
 
@@ -26,14 +26,58 @@ Section modular.
 Import Nat.
 Import Nat.Div0.
 
+Fixpoint Zmod (n : nat) : list nat := 
+  match n with
+  | O => []
+  | S n' => Zmod n' ++ [n']
+  end.
+
+Theorem Zmod_equiv :
+  forall n a : nat, In a (Zmod n) <-> 0 <= a < n.
+Proof.
+  intros n a.
+  split; intros Ha.
+  - split.
+    + apply Nat.le_0_l.
+    + induction n; simpl in *; [contradiction|].
+      apply in_app_iff in Ha; inversion Ha.
+      * constructor. exact (IHn H).
+      * destruct H as [Hn | F]; [subst; auto |contradiction].
+  - induction n.
+    + lia.
+    + simpl.
+      destruct Ha as [H0 Ha].
+      apply in_app_iff.
+      destruct (lt_dec a n); [left|right].
+      * auto.
+      * simpl. left. lia.
+Qed.
+
+Lemma Zmod_length : forall n, length (Zmod n) = n.
+Proof.
+  induction n; simpl; auto.
+  rewrite app_length; simpl.
+  lia.
+Qed.
+
+Lemma Zmod_NoDup : forall n, NoDup (Zmod n).
+Proof.
+  induction n; simpl.
+  - constructor.
+  - apply Permutation_NoDup with ([n] ++ Zmod n).
+    + apply Permutation_app_comm.
+    + simpl; constructor.
+      * rewrite Zmod_equiv. lia.
+      * apply IHn.
+Qed.
+
 Variable N : nat.
+Hypothesis HN : N <> 0.
 
 Definition bounded n := 0 <= n < N.
 Definition add a b := (a + b) mod N.
 
-Hypothesis HN : N <> 0.
-
-#[refine] Instance ZmodN_G : 
+#[refine] Instance ZmodN_G:
   Group bounded add := {
     Ge := 0;
     Ginv n := (N - n) mod N
@@ -63,41 +107,34 @@ Proof.
     apply mod_same; auto.
 Qed.
 
-Fixpoint Zmod (n : nat) : list nat := 
-  match n with
-  | O => []
-  | S n' => Zmod n' ++ [n']
-  end.
-
-Theorem mod_list_pred_equiv :
-  forall n a : nat, List.In a (Zmod n) <-> 0 <= a < n.
-Proof.
-  intros n a.
-  split; intros Ha.
-  - split.
-    + apply Nat.le_0_l.
-    + induction n; simpl in *; [contradiction|].
-      apply in_app_iff in Ha; inversion Ha.
-      * constructor. exact (IHn H).
-      * destruct H as [Hn | F]; [subst; auto |contradiction].
-  - induction n.
-    + lia.
-    + simpl.
-      destruct Ha as [H0 Ha].
-      apply in_app_iff.
-      destruct (lt_dec a n); [left|right].
-      * auto.
-      * simpl. left. lia.
-Qed.
-
-Check ZmodN_G.
-
-Definition ZmodN: 
+Instance ZmodN:
   FiniteGroup bounded add.
 Proof.
   apply fgroup with (Zmod N).
   - apply ZmodN_G.
-  - apply mod_list_pred_equiv.
+  - apply Zmod_NoDup.  
+  - apply Zmod_equiv.
+Qed.
+
+Theorem ZmodN_elems : 
+  Permutation Gelems (Zmod N).
+Proof.
+  apply NoDup_Permutation.
+  - apply Gnodup.
+  - apply Zmod_NoDup.
+  - intros.
+    eapply iff_trans.
+    + apply Gequiv.
+    + symmetry.
+      apply Zmod_equiv.
+Qed.
+
+Theorem ZmodN_order : Gorder = N.
+Proof.
+  unfold Gorder.
+  rewrite <- Zmod_length.
+  apply Permutation_length.
+  apply ZmodN_elems.
 Qed.
 
 End modular.
