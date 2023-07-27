@@ -70,7 +70,6 @@ Proof.
 Qed.
 
 (* Equivalence of the two definitions *)
-(* Tip: Display implicit arguments to maintain sanity *)
 Theorem subgroup_equiv : 
   Subgroup <-> subgroup.
 Proof.
