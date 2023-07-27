@@ -1,0 +1,53 @@
+*--- Group Definition ---*
+Current implementation for groups is as follows:
+- class definition for groups using a predicate
+  as the membership property
+- subclass for finite groups, adding a list
+  representation, and two properties: list
+  must contain no duplicates, list inclusion
+  must be equivalent to some predicate
+
+Shortcomings of this implementation so far:
+- Burden of the equivalence property for fgroups
+  is unwarranted for small groups, where group
+  properties can be verified inductively on all
+  members. This may be okay, as theorems can be 
+  developed to minimize properties to be proven in
+  general as core develops. Ex: Operations can be 
+  proven to be associative and/or commutative in
+  general so all instances using a subset of this
+  type already resolve those requirements.
+- Subgroup definitions grow along with group
+  implementations.
+- Limitations stack with each property that is
+  not inherent in CiC
+
+Goal:
+- Determine which properties, including axiomatic
+  requirements, must be included as group properties
+- Generate higher-order subclass which allows tacking
+  on more properties (will be useful for rings... etc)
+- Verify whether decidability is needed still, or 
+  if uniqueness_of_inverses can help resolve cases
+
+*--- Other Ideas ---*
+- Finite Predicate Group definition (fpgroup)
+  + No equiv theorem, just list.
+  + Requires redefinition of group properties
+    with list inclusion instead of predicate memb.
+  + More equivalence theorems
+
+- Multiuple constructors for group
+  + Instead of subclasses
+  + group, dfgroup -> fgroup
+  + verify burdens in existing theorems/instances
+
+- Decidabilty (excluded middle)
+  * As group property OR as context variable
+  * Of element equality (general) or membership (bound)?
+
+- Equivalence/Reflection theorems for above ideas
+  + Learn more about ssr_reflect library
+
+- Solving tactics for instance proofs
+  + Add unfolds...etc to hint db
