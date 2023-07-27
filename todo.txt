@@ -1,9 +1,0 @@
-✓ Separate modules/files
-✓ Eliminate Nat. Nat.Div0. mentions via proper import
-- Group isomorphism
-- Quotient Groups
-✓ Order (Finite Groups)
-- Cardinality (Infinite Groups)
-  * This is probably impossible. Will have to see if
-    I can define density, well ordering ..etc
-- Lagrange's Theorem

@@ -1,0 +1,8 @@
+* Section 5 : Group Definitions
+  The early chapters use instances of raitonals, reals,
+  and other set that are currently out of scope
+  from the type theory perspective. While generalized
+  algebraic properties will be feasible in CiC,
+  being able to prove instances and/or properties
+  of families of instances will require a deeper dive.
+  As such, many questions have been skipped... for now. 
