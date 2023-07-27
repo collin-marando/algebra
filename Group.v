@@ -8,13 +8,33 @@ Section Group.
 (* Implicit Type  *)
 Context {T : Type}.
 
-(* 
-  In order to maximize the strength of theorems,
-  we can weaken the preconditon by only assuming the group
-  requirements that we need for the proof. We can implment
-  sets of group properties as subclasses of the Group class. 
-  The informal description of a Group divides these properties
-  into 4 laws: closure, associativity, identity, and inverses.
+(* This may become a requirement, see notes below *)
+Definition decidable_eq T := 
+  forall x y : T, {x = y} + {x <> y}.
+
+Definition in_list (l : list T) : T -> Prop :=
+  fun a : T => In a l.
+
+(* Note: The lack of excluded middle in CiC means
+  this group definition techinically lacks a feature:
+  decidability of element equality. This is a requirement
+  for some proofs. The decision on whether or not to
+  add this property to the context will depend on
+  how many proofs end up requiring it. If it is added,
+  this would incur extra cost on proofs of instances. 
+
+  Another decision would be whether it should be added
+  to the group definition, or as a context variable in 
+  the section (above).
+
+  For now, I leave the group definition as is. If many
+  proofs with decidability as a requirement emerge, I may
+  decide (heh) to add this property and update the
+  subsequent instance proofs. This could be as easy
+  as adding decidability for whatever types as a 
+  section hypothesis for _auto_ to pick up, keeping
+  the proofs virtually the same. This would reflect
+  nicely with the requirement as a section variable.
 *)
 
 Class Group (G : T -> Prop) (op : T -> T -> T) := group  {
@@ -48,7 +68,9 @@ Hypothesis HG : Group G op.
 
 (* Note: There may be a class worth making where membership
   decidabilty is required as a field, if there are sufficient
-  theorems that rely on it *)
+  theorems that rely on it.
+  Update: This likely coincides with decidability
+  on equality (mentioned above) *)
 Definition elem_dec (a : T) := {G a} + {~ G a}.
 Definition membership_dec := forall a, elem_dec a.
 
@@ -128,9 +150,29 @@ Proof.
     rewrite !Ginv_r; auto.
 Qed.
 
+(* This proof shows that a Group is a FiniteGroup if
+  - Element equality is decidable
+  - The membership predicate is defined as
+    inclusion in some list (finite)
+*)
+  Lemma in_list_finite `{dec: decidable_eq T} :
+  forall (l : list T) op,
+  Group (in_list l) op
+    -> FiniteGroup (in_list l) op.
+Proof.
+  intros.
+  apply fgroup with (nodup dec l).
+  - assumption.
+  - apply NoDup_nodup.
+  - intros.
+    apply iff_trans with (In a l).
+    + apply nodup_In.
+    + unfold in_list. reflexivity.
+Qed.
+
 End group_theorems.
 
-(* Finite Group Theorems *)
+(* ------ Finite Group Theorems ------- *)
 Section finite_group_theorems.
 
 Variable G : T -> Prop.
