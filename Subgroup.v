@@ -16,10 +16,10 @@ Inductive subgroup : Prop :=
   | SGroup : subset G H -> Group H op -> subgroup.
 
 (* Subgroup via least requirements *)
-Class Subgroup : Prop := sgroup { 
+Class Subgroup : Prop := sgroup {
   Ssub : forall x, H x -> G x;
   Snon_emp : exists x, H x;
-  Sclosed : forall x y, H x -> H y -> H (op x y); 
+  Sclosed : forall x y, H x -> H y -> H (op x y);
   Sinv : forall x, H x -> H (Ginv x)
 }.
 
@@ -70,7 +70,7 @@ Proof.
 Qed.
 
 (* Equivalence of the two definitions *)
-Theorem subgroup_equiv : 
+Theorem subgroup_equiv :
   Subgroup <-> subgroup.
 Proof.
   intros; split.

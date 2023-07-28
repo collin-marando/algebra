@@ -9,7 +9,7 @@ Section Group.
 Context {T : Type}.
 
 (* This may become a requirement, see notes below *)
-Definition decidable_eq T := 
+Definition decidable_eq T :=
   forall x y : T, {x = y} + {x <> y}.
 
 Definition in_list (l : list T) : T -> Prop :=
@@ -21,23 +21,23 @@ Definition in_list (l : list T) : T -> Prop :=
   for some proofs. The decision on whether or not to
   add this property to the context will depend on
   how many proofs end up requiring it. If it is added,
-  this would incur extra cost on proofs of instances. 
+  this would incur extra cost on proofs of instances.
 
   Another decision would be whether it should be added
-  to the group definition, or as a context variable in 
+  to the group definition, or as a context variable in
   the section (above).
 
   For now, I leave the group definition as is. If many
   proofs with decidability as a requirement emerge, I may
   decide (heh) to add this property and update the
   subsequent instance proofs. This could be as easy
-  as adding decidability for whatever types as a 
+  as adding decidability for whatever types as a
   section hypothesis for _auto_ to pick up, keeping
   the proofs virtually the same. This would reflect
   nicely with the requirement as a section variable.
 *)
 
-Class Group (G : T -> Prop) (op : T -> T -> T) := group  {
+Class Group (G : T -> Prop) (op : T -> T -> T) := group {
   Ge: T;
   Ginv: T -> T;
   Gclosed: forall a b, G a -> G b -> G (op a b);
@@ -112,7 +112,7 @@ Proof.
 Qed.
 
 Lemma uniqueness_of_inverses f:
-  forall a, G a 
+  forall a, G a
   -> G (f a)
   -> op a (f a) = Ge \/ op (f a) a = Ge
   -> f a = HG.(Ginv) a.
@@ -126,7 +126,7 @@ Proof.
     + rewrite Ginv_r; assumption.
 Qed.
 
-Lemma inv_involutive : 
+Lemma inv_involutive :
   forall x, G x -> Ginv (Ginv x) = x.
 Proof.
   intros x Gx.

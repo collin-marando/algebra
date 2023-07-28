@@ -26,7 +26,7 @@ Section modular.
 Import Nat.
 Import Nat.Div0.
 
-Fixpoint Zmod (n : nat) : list nat := 
+Fixpoint Zmod (n : nat) : list nat :=
   match n with
   | O => []
   | S n' => Zmod n' ++ [n']
@@ -112,11 +112,11 @@ Instance ZmodN:
 Proof.
   apply fgroup with (Zmod N).
   - apply ZmodN_G.
-  - apply Zmod_NoDup.  
+  - apply Zmod_NoDup.
   - apply Zmod_equiv.
 Qed.
 
-Theorem ZmodN_elems : 
+Theorem ZmodN_elems :
   Permutation Gelems (Zmod N).
 Proof.
   apply NoDup_Permutation.
