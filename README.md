@@ -12,3 +12,5 @@ Future plans include adding:
 - Normal Groups (predicate and/or list based inclusions)
 - Ideals (predicate and/or list based inclusion)
 - Various fundamental theorems
+
+A subfolder (durbin) selects questions from Durbin's "Modern Algebra", for testing and POC.
