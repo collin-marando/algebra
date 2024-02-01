@@ -2,7 +2,7 @@
 
 A recreational attempt at a library for abstract algebra.
 
-Current working strutures:
+Current working structures:
 - Groups (predicate based inclusion)
 - Finite Groups (list based inclusion, with conversions to predicate based groups)
 
